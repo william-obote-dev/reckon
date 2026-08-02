@@ -44,6 +44,14 @@ npm run dev
 
 Open `http://localhost:3000`. Your local data lives in `./.data/` (gitignored).
 
+## What's built (Phase 1 + early Phase 2)
+
+- Accounts, entries, and the target-vs-actual reconciliation dashboard
+- **Streaks** — consecutive days logged per account, shown as a flame badge
+- **Trend chart** — daily minutes per account over the last 14–90 days (Recharts area chart)
+- **Trend projection** — a small, honest linear regression per account (not a black box) reporting direction and a naive 7-day-ahead projection, exposed at `/api/trends`
+- **AI weekly statements** — `POST /api/statements` sends the week's ledger (targets, actuals, entry notes) to Claude and stores back a short plain-language statement narrating the gap between what you said mattered and what you actually did. Requires `ANTHROPIC_API_KEY`; without one, the endpoint fails with a clear 501 rather than a confusing error.
+
 ## How the reconciliation works
 
 `GET /api/dashboard?days=7` is the core of the product:
@@ -98,12 +106,9 @@ workaround.
 
 ## Roadmap
 
-**Phase 2 — weekly statements.** A Vercel Cron job (`vercel.json`, run
-weekly) calls a route that pulls the past week's entries and account
-targets, sends them to Claude, and stores a generated narrative statement
-("You said Health mattered most this quarter, but it ran a deficit every
-week except one — here's what shifted...") in the `statements` table.
-Surface statement history on the dashboard.
+**Phase 2 (mostly built)** — weekly AI statements are live (`/api/statements`).
+Left to do: a Vercel Cron job to auto-generate one every week instead of
+requiring a manual click, and surfacing statement history more prominently.
 
 **Phase 3 — richer capture.** Calendar import (Google Calendar API) to
 auto-suggest entries instead of manual logging; recurring entries for
@@ -112,7 +117,9 @@ since the whole model depends on logging being fast enough to actually do.
 
 **Later:** shareable read-only statement links; multi-user households
 sharing certain accounts (e.g. a couple both logging against "Family
-time"); data export.
+time"); data export; a proper anomaly-detection pass (e.g. flagging when
+an account's actual time swings more than N standard deviations from its
+own trailing average) rather than the current straightforward linear fit.
 
 ## What's deliberately not built yet
 
